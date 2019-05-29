@@ -6,7 +6,6 @@
 //=========================================================================	//
 #include "def_principais.h"
 #include "USART.h"
-#include "LCD.h"
 
 const char primeira_msg[] PROGMEM = "Transmitindo primeira mensagem para o computador! Digite agora - Para sair <*>\n\0";
 const char segunda_msg[]  PROGMEM = "\nTransmissao Encerrada: Bye, Bye!\0";
@@ -14,36 +13,23 @@ const char segunda_msg[]  PROGMEM = "\nTransmissao Encerrada: Bye, Bye!\0";
 //-------------------------------------------------------------------------
 int main()
 {
-	unsigned char status;
-	unsigned char dado_srt[3];
-	int x = 0;
-	DDRD = 0xFF;
+	unsigned char dado_recebido;
+	
 	USART_Inic(MYUBRR);
-	inic_LCD_4bits();
+	
 	escreve_USART_Flash(primeira_msg);
-
-	while(1)
+	
+	do
 	{
-		status = USART_Recebe();
-		if (status == 'L')
-		{
-			dado_srt[0]= 'L';
-			dado_srt[1]= USART_Recebe();
-			dado_srt[2]= USART_Recebe();
-		}
-		if (status == 'D')
-		{
-			dado_srt[0]= 'D';
-			dado_srt[1]= USART_Recebe();
-			dado_srt[2]= USART_Recebe();
-		}
-		
-		cmd_LCD(0x80, 0);
-		cmd_LCD(dado_srt[0], 1);
-		cmd_LCD(dado_srt[1], 1);
-		cmd_LCD(dado_srt[2], 1);
-		
-	}
+		dado_recebido= USART_Recebe();	//recebe caractere
+		USART_Transmite('-');
+		USART_Transmite('>');
+		USART_Transmite(dado_recebido);	//envia o caractere recebido
+	}while(dado_recebido!='*');
+	
+	escreve_USART_Flash(segunda_msg);
+	
+	while(1);//laço infinito
 }
 //---------------------------------------------------------------------------
 
